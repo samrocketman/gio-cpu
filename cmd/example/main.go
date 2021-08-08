@@ -24,7 +24,7 @@ func main() {
 	img := cpu.NewImageRGBA(imgWidth, imgHeight)
 	defer img.Free()
 
-	var descSet example.TestDescriptorSetLayout
+	var descSet example.ExampleDescriptorSetLayout
 	*descSet.Binding0() = buffer
 	*descSet.Binding1() = img
 
@@ -33,7 +33,7 @@ func main() {
 	bufData := buffer.Data()
 	intBuf := unsafe.Slice((*int32)(unsafe.Pointer(&bufData[0])), len(bufData)/4)
 	nthreads := runtime.NumCPU()
-	ctx.Prepare(nthreads, example.TestProgramInfo, unsafe.Pointer(&descSet), 4, 3, 2)
+	ctx.Prepare(nthreads, example.ExampleProgramInfo, unsafe.Pointer(&descSet), 4, 3, 2)
 	done := make(chan struct{})
 	for i := 0; i < nthreads; i++ {
 		i := i

@@ -18,6 +18,8 @@ import (
 	"unsafe"
 
 	_ "embed"
+
+	"gioui.org/cpu"
 )
 
 /*
@@ -135,29 +137,28 @@ func main() {
 	}
 	renames = append(renames, syso)
 	objcopy := exec.Command(*objcopy, renames...)
+	objcopy.Stderr = os.Stderr
 	if err := objcopy.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v: %v\n", objcopy, err)
 		os.Exit(2)
 	}
-	if err := os.WriteFile(name+"_abi.h", header, 0644); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(2)
+	files := []struct {
+		name    string
+		content []byte
+	}{
+		{name + "_abi.h", header},
+		{name + "_abi.c", impl},
+		{name + "_abi.go", goImpl},
+		{name + "_abi_nosupport.go", goFallbackImpl},
+		{"support.c", supportc},
+		{"runtime.h", cpu.RuntimeH},
+		{"abi.h", cpu.ABIH},
 	}
-	if err := os.WriteFile(name+"_abi.c", impl, 0644); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(2)
-	}
-	if err := os.WriteFile(name+"_abi.go", goImpl, 0644); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(2)
-	}
-	if err := os.WriteFile(name+"_abi_nosupport.go", goFallbackImpl, 0644); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(2)
-	}
-	if err := os.WriteFile("support.c", supportc, 0644); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(2)
+	for _, f := range files {
+		if err := os.WriteFile(f.name, f.content, 0644); err != nil {
+			fmt.Fprintf(os.Stderr, "%v\n", err)
+			os.Exit(2)
+		}
 	}
 }
 
@@ -224,8 +225,8 @@ func generateImpl(name string, p program) []byte {
 	b.printf("%s\n\n", supportConstraints116)
 	b.printf("#include <stdint.h>\n")
 	b.printf("#include <stddef.h>\n")
-	b.printf("#include \"../abi.h\"\n")
-	b.printf("#include \"../runtime.h\"\n")
+	b.printf("#include \"abi.h\"\n")
+	b.printf("#include \"runtime.h\"\n")
 	b.printf("#include \"%s_abi.h\"\n\n", name)
 	b.printf("const struct program_info %s_program_info = {\n", name)
 	c := 0
@@ -296,8 +297,8 @@ func generateGo(pkg, name, hexSum string, layout []descriptor) []byte {
 	b.printf("#cgo LDFLAGS: -lm\n\n")
 	b.printf("#include <stdint.h>\n")
 	b.printf("#include <stdlib.h>\n")
-	b.printf("#include \"../abi.h\"\n")
-	b.printf("#include \"../runtime.h\"\n")
+	b.printf("#include \"abi.h\"\n")
+	b.printf("#include \"runtime.h\"\n")
 	b.printf("#include \"%s_abi.h\"\n", name)
 	b.printf("*/\n")
 	b.printf("import \"C\"\n\n")

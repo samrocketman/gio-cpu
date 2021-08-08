@@ -7,8 +7,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "../abi.h"
-#include "../runtime.h"
+#include "abi.h"
+#include "runtime.h"
 
 static void *malloc_align(size_t alignment, size_t size) {
 	void *ptr;
