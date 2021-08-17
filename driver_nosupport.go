@@ -28,7 +28,6 @@ func (d *BufferDescriptor) Data() []byte {
 }
 
 func (d *BufferDescriptor) Free() {
-	panic("unsupported")
 }
 
 func NewImageRGBA(width, height int) ImageDescriptor {
@@ -40,7 +39,6 @@ func (d *ImageDescriptor) Data() []byte {
 }
 
 func (d *ImageDescriptor) Free() {
-	panic("unsupported")
 }
 
 func NewDispatchContext() *DispatchContext {
@@ -48,7 +46,6 @@ func NewDispatchContext() *DispatchContext {
 }
 
 func (c *DispatchContext) Free() {
-	panic("unsupported")
 }
 
 func (c *DispatchContext) Prepare(numThreads int, prog *ProgramInfo, descSet unsafe.Pointer, x, y, z int) {
@@ -64,5 +61,4 @@ func NewThreadContext() *ThreadContext {
 }
 
 func (c *ThreadContext) Free() {
-	panic("unsupported")
 }
