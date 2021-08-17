@@ -17,6 +17,8 @@ type (
 	ProgramInfo     struct{}
 )
 
+const Supported = false
+
 func NewBuffer(size int) BufferDescriptor {
 	panic("unsupported")
 }

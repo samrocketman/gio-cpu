@@ -29,6 +29,8 @@ type (
 	ProgramInfo     = C.struct_program_info
 )
 
+const Supported = true
+
 func NewBuffer(size int) BufferDescriptor {
 	return C.alloc_buffer(C.size_t(size))
 }
