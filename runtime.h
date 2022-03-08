@@ -26,8 +26,8 @@ struct dispatch_context;
 // reused, but not concurrently.
 struct thread_context;
 
-extern struct buffer_descriptor alloc_buffer(size_t size) ATTR_HIDDEN;
-extern struct image_descriptor alloc_image_rgba(int width, int height) ATTR_HIDDEN;
+extern void alloc_buffer(struct buffer_descriptor *res, size_t size) ATTR_HIDDEN;
+extern void alloc_image_rgba(struct image_descriptor *res, int width, int height) ATTR_HIDDEN;
 
 extern struct dispatch_context *alloc_dispatch_context(void) ATTR_HIDDEN;
 

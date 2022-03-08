@@ -289,7 +289,6 @@ func generateGo(pkg, name string, layout []descriptor) []byte {
 	b.printf("import \"unsafe\"\n\n")
 
 	b.printf("/*\n")
-	b.printf("#cgo LDFLAGS: -lm\n\n")
 	b.printf("#include <stdint.h>\n")
 	b.printf("#include <stdlib.h>\n")
 	b.printf("#include \"abi.h\"\n")

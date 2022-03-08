@@ -46,12 +46,10 @@ struct thread_context {
 	uint8_t *memory;
 };
 
-static void *malloc_align(size_t alignment, size_t size) {
-	void *ptr;
-	int ret = posix_memalign(&ptr, alignment, size);
-	assert(ret == 0);
-	return ptr;
-}
+//static void *malloc_align(size_t alignment, size_t size) {
+//	return malloc(size);
+//}
+extern void *malloc_align(size_t alignment, size_t size);
 
 static void coroutines_dump(struct coroutines *routines) {
 	fprintf(stderr, "s: %d e: %d c: %d [", routines->start, routines->end, routines->cap);
@@ -73,13 +71,16 @@ static void coroutines_push(struct coroutines *routines, coroutine r) {
 		if (newcap < 10) {
 			newcap = 10;
 		}
-		routines->routines = realloc(routines->routines, newcap*sizeof(coroutine));
+		void *alloc = malloc(newcap*sizeof(coroutine));
+		memmove(alloc, routines->routines, routines->cap*sizeof(coroutine));
+		free(routines->routines);
+		routines->routines = alloc;
+		//routines->routines = realloc(routines->routines, newcap*sizeof(coroutine));
 		// Move elements wrapped around the old cap to the newly allocated space.
 		if (routines->end < routines->start) {
 			unsigned int nelems = routines->end;
 			unsigned int max = newcap - routines->cap;
 			// We doubled the space above, so we can assume enough room.
-			assert(nelems <= max);
 			memmove(&routines->routines[routines->cap], &routines->routines[0], nelems*sizeof(coroutine));
 			routines->end += routines->cap;
 		}
@@ -135,17 +136,17 @@ void free_thread_context(struct thread_context *c) {
 	struct thread_context clr = { 0 }; *c = clr;
 }
 
-struct buffer_descriptor alloc_buffer(size_t size) {
+void alloc_buffer(struct buffer_descriptor *res, size_t size) {
 	void *buf = malloc_align(MIN_STORAGE_BUFFER_OFFSET_ALIGNMENT, size);
 	struct buffer_descriptor desc = {
 		.ptr = buf,
 		.size_in_bytes = size,
 		.robustness_size = size,
 	};
-	return desc;
+	*res = desc;
 }
 
-struct image_descriptor alloc_image_rgba(int width, int height) {
+void alloc_image_rgba(struct image_descriptor *res, int width, int height) {
 	size_t size = width*height*4;
 	size = (size + 16 - 1)&~(16 - 1);
 	void *storage = malloc_align(REQUIRED_MEMORY_ALIGNMENT, size);
@@ -159,7 +160,7 @@ struct image_descriptor alloc_image_rgba(int width, int height) {
 	desc.sample_pitch_bytes = size;
 	desc.sample_count = 1;
 	desc.size_in_bytes = size;
-	return desc;
+	*res = desc;
 }
 
 void prepare_dispatch(struct dispatch_context *ctx, int nthreads, struct program_info *info, uint8_t *desc_set, int ngroupx, int ngroupy, int ngroupz) {

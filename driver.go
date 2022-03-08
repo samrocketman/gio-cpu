@@ -30,8 +30,12 @@ type (
 
 const Supported = true
 
+type Size_t = C.size_t
+
 func NewBuffer(size int) BufferDescriptor {
-	return C.alloc_buffer(C.size_t(size))
+	var ret BufferDescriptor
+	C.alloc_buffer(&ret, C.size_t(size))
+	return ret
 }
 
 func (d *BufferDescriptor) Data() []byte {
@@ -46,7 +50,9 @@ func (d *BufferDescriptor) Free() {
 }
 
 func NewImageRGBA(width, height int) ImageDescriptor {
-	return C.alloc_image_rgba(C.int(width), C.int(height))
+	var img ImageDescriptor
+	C.alloc_image_rgba(&img, C.int(width), C.int(height))
+	return img
 }
 
 func (d *ImageDescriptor) Data() []byte {
