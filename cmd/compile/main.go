@@ -184,7 +184,7 @@ func parseProgramParams(spirv []byte) (program, error) {
 
 	var p program
 	// TODO: extract from SwiftShader.
-	p.memorySize = 1e5
+	p.memorySize = 32000
 	if err := disassemble.Run(); err != nil {
 		return p, err
 	}
@@ -401,7 +401,7 @@ func compileProgram(spirv []byte, layout []descriptor) ([]byte, error) {
 	}
 	var inst C.VkInstance
 	if err := vkErr(C.vkCreateInstance(&instInf, nil, &inst)); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("vkCreateInstance: %w", err)
 	}
 	defer C.vkDestroyInstance(inst, nil)
 
@@ -411,7 +411,7 @@ func compileProgram(spirv []byte, layout []descriptor) ([]byte, error) {
 		pdev C.VkPhysicalDevice
 	)
 	if err := vkErr(C.vkEnumeratePhysicalDevices(inst, &ndev, &pdev)); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("vkEnumeratePhysicalDevices: %w", err)
 	}
 
 	// Find queue with compute ability.
@@ -448,7 +448,7 @@ func compileProgram(spirv []byte, layout []descriptor) ([]byte, error) {
 	}
 	var dev C.VkDevice
 	if err := vkErr(C.vkCreateDevice(pdev, &devInf, nil, &dev)); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("vkCreateDevice: %w", err)
 	}
 	defer C.vkDestroyDevice(dev, nil)
 
@@ -463,7 +463,7 @@ func compileProgram(spirv []byte, layout []descriptor) ([]byte, error) {
 	}
 	var mod C.VkShaderModule
 	if err := vkErr(C.vkCreateShaderModule(dev, &modInf, nil, &mod)); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("vkCreateShaderModule: %w", err)
 	}
 	defer C.vkDestroyShaderModule(dev, mod, nil)
 
@@ -496,7 +496,7 @@ func compileProgram(spirv []byte, layout []descriptor) ([]byte, error) {
 	}
 	var descSetLayout C.VkDescriptorSetLayout
 	if err := vkErr(C.vkCreateDescriptorSetLayout(dev, &descSetLayoutInf, nil, &descSetLayout)); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("vkCreateDescriptorSetLayout: %w", err)
 	}
 	defer C.vkDestroyDescriptorSetLayout(dev, descSetLayout, nil)
 
@@ -512,7 +512,7 @@ func compileProgram(spirv []byte, layout []descriptor) ([]byte, error) {
 	}
 	var pipeLayout C.VkPipelineLayout
 	if err := vkErr(C.vkCreatePipelineLayout(dev, &pipeLayoutInf, nil, &pipeLayout)); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("vkCreatePipelineLayout: %w", err)
 	}
 	defer C.vkDestroyPipelineLayout(dev, pipeLayout, nil)
 	mainName := C.CString("main")
@@ -531,7 +531,7 @@ func compileProgram(spirv []byte, layout []descriptor) ([]byte, error) {
 	var pipe C.VkPipeline
 	var nilPipeCache C.VkPipelineCache
 	if err := vkErr(C.vkCreateComputePipelines(dev, nilPipeCache, 1, &pipeInf, nil, &pipe)); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("vkCreateComputePipeline: %w", err)
 	}
 	const objFile = "reactor_jit_llvm_0000_ComputeProgram.o"
 	defer os.Remove(objFile)
